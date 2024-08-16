@@ -121,7 +121,7 @@ class PaymentSuccessDialog extends StatelessWidget {
                       onPressed: () async {
                         context
                             .read<OrderBloc>()
-                            .add(PrintOrderEvent(order: order));
+                            .add(DetailOrderEvent(id: state.order.id));
                       },
                       label: 'Print',
                       icon: Assets.icons.print.svg(),
