@@ -9,6 +9,7 @@ import 'package:flutter_outlet/features/order/models/order.dart';
 import 'package:image/image.dart' as img;
 import 'package:flutter_outlet/models/custom_error.dart';
 import 'package:flutter_outlet/features/printer/models/printer.dart';
+import 'package:intl/intl.dart';
 import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -67,9 +68,9 @@ class PrinterServices {
     final branch = await AuthRepository().getBranch();
     List<int> ticket = await _getBytesOrder(order: order, branch: branch);
     bool result = await PrintBluetoothThermal.writeBytes(ticket);
-    if (!result) {
-      throw const CustomError(message: 'Error Printing!');
-    }
+    // if (!result) {
+    //   throw const CustomError(message: 'Error Printing!');
+    // }
     bool disconnect = await PrintBluetoothThermal.disconnect;
     if (!disconnect) {
       throw const CustomError(message: 'Failed Disconnect Device!');
@@ -89,15 +90,16 @@ class PrinterServices {
       throw const CustomError(message: 'Device Not Connect!');
     }
     List<int> ticket = await _testTicket();
-    bool result = await PrintBluetoothThermal.writeBytes(ticket);
-    if (!result) {
-      throw const CustomError(message: 'Error Printing!');
-    }
+    // bool result =
+    await PrintBluetoothThermal.writeBytes(ticket);
+    // if (!result) {
+    //   throw const CustomError(message: 'Error Printing!');
+    // }
     bool disconnect = await PrintBluetoothThermal.disconnect;
     if (!disconnect) {
       throw const CustomError(message: 'Cannot Disconnect Device!');
     }
-    return result;
+    return disconnect;
   }
 
   Future<bool> _checkStatus() async {
@@ -121,7 +123,7 @@ class PrinterServices {
     //bytes += generator.setGlobalFont(PosFontType.fontA);
     bytes += generator.reset();
 
-    final ByteData data = await rootBundle.load('assets/images/logo.png');
+    final ByteData data = await rootBundle.load('assets/images/logo_white.png');
     final Uint8List bytesImg = data.buffer.asUint8List();
     img.Image image = img.decodeImage(bytesImg)!;
 
@@ -134,9 +136,7 @@ class PrinterServices {
       final bytesimg = Uint8List.fromList(img.encodeJpg(resizedImage));
       image = img.decodeImage(bytesimg)!;
     }
-
-    //Using `ESC *`
-    // bytes += generator.image(image, align: PosAlign.center);
+    // bytes += generator.image(image);
 
     bytes += generator.text(
         'Regular: aA bB cC dD eE fF gG hH iI jJ kK lL mM nN oO pP qQ rR sS tT uU vV wW xX yY zZ');
@@ -209,24 +209,24 @@ class PrinterServices {
     required Branch branch,
   }) async {
     List<int> bytes = [];
+    String dateString = order.date;
+    DateTime dateTime = DateTime.parse(dateString);
+
+    String date = DateFormat("dd-MMM-yyyy").format(dateTime);
+    String time = DateFormat("H:m:s").format(dateTime);
 
     final profile = await CapabilityProfile.load();
     final generator = Generator(PaperSize.mm58, profile);
 
     bytes += generator.reset();
-    // final ByteData data = await rootBundle.load('assets/images/logo.png');
-    // final Uint8List bytesImg = data.buffer.asUint8List();
-    // img.Image? image = img.decodeImage(bytesImg)!;
-
-    // bytes += generator.image(image, align: PosAlign.center);
 
     bytes += generator.text(
       branch.name,
       styles: const PosStyles(
         bold: true,
         align: PosAlign.center,
-        height: PosTextSize.size2,
-        width: PosTextSize.size2,
+        height: PosTextSize.size3,
+        width: PosTextSize.size1,
         fontType: PosFontType.fontA,
       ),
     );
@@ -239,12 +239,13 @@ class PrinterServices {
       ),
     );
     bytes += generator.text(
-      branch.phone,
+      'TELP/WA : ${branch.phone}',
       styles: const PosStyles(
         bold: true,
         align: PosAlign.center,
       ),
     );
+    bytes += generator.hr();
     bytes += generator.row([
       PosColumn(
         text: 'ORDER ID',
@@ -264,7 +265,19 @@ class PrinterServices {
         styles: const PosStyles(align: PosAlign.left),
       ),
       PosColumn(
-        text: ': ${order.date}',
+        text: ': $date',
+        width: 8,
+        styles: const PosStyles(align: PosAlign.left),
+      ),
+    ]);
+    bytes += generator.row([
+      PosColumn(
+        text: 'JAM',
+        width: 4,
+        styles: const PosStyles(align: PosAlign.left),
+      ),
+      PosColumn(
+        text: ': $time',
         width: 8,
         styles: const PosStyles(align: PosAlign.left),
       ),
@@ -283,7 +296,7 @@ class PrinterServices {
     ]);
     bytes += generator.row([
       PosColumn(
-        text: 'NAMA PEMESAN',
+        text: 'NAMA',
         width: 4,
         styles: const PosStyles(align: PosAlign.left),
       ),
@@ -293,27 +306,30 @@ class PrinterServices {
         styles: const PosStyles(align: PosAlign.left),
       ),
     ]);
-    // bytes += generator.text('ORDER ID : ${order.number}',
-    //     styles: const PosStyles(bold: false, align: PosAlign.left));
-    // bytes += generator.text('TANGGAL : ${order.date}',
-    //     styles: const PosStyles(bold: false, align: PosAlign.left));
-    // bytes += generator.text('KASIR : ${order.user?.name ?? '-'}',
-    //     styles: const PosStyles(bold: false, align: PosAlign.left));
+    bytes += generator.row([
+      PosColumn(
+        text: 'PAYMENT',
+        width: 4,
+        styles: const PosStyles(align: PosAlign.left),
+      ),
+      PosColumn(
+        text: ': ${order.payment.toUpperCase()}',
+        width: 8,
+        styles: const PosStyles(align: PosAlign.left),
+      ),
+    ]);
 
-    bytes += generator.feed(1);
-    bytes += generator.text('PESANAN:',
-        styles: const PosStyles(bold: false, align: PosAlign.center));
-    //for from data
+    bytes += generator.hr();
+    // bytes += generator.text('PESANAN:',
+    //     styles: const PosStyles(bold: false, align: PosAlign.center));
+    // bytes += generator.hr();
+
     for (final item in order.orderItem) {
-      bytes += generator.text(
-          '${item.qty}X ${item.branchMenu?.menu?.name ?? '-'}',
+      bytes += generator.text(item.branchMenu?.menu?.name ?? '-',
           styles: const PosStyles(align: PosAlign.left));
-
       bytes += generator.row([
         PosColumn(
-          text: item.totalDiscount > 0
-              ? '-${item.totalDiscount.currencyFormatRp}'
-              : '',
+          text: '${item.qty} X ${item.price.currencyFormat}',
           width: 8,
           styles: const PosStyles(align: PosAlign.left),
         ),
@@ -323,70 +339,75 @@ class PrinterServices {
           styles: const PosStyles(align: PosAlign.right),
         ),
       ]);
+      if (item.totalDiscount > 0) {
+        bytes += generator.text(
+          '- ${item.totalDiscount.currencyFormat}',
+          styles: const PosStyles(
+            align: PosAlign.right,
+          ),
+        );
+      }
     }
 
-    bytes += generator.feed(1);
+    bytes += generator.hr();
 
     bytes += generator.row([
       PosColumn(
-        text: 'TOTAL',
-        width: 6,
-        styles: const PosStyles(align: PosAlign.left),
+        text: 'TOTAL :',
+        width: 5,
+        styles: const PosStyles(align: PosAlign.right),
       ),
       PosColumn(
         text: order.total.currencyFormatRp,
-        width: 6,
+        width: 7,
         styles: const PosStyles(align: PosAlign.right),
       ),
     ]);
 
     bytes += generator.row([
       PosColumn(
-        text: 'BAYAR',
-        width: 6,
-        styles: const PosStyles(align: PosAlign.left),
+        text: 'BAYAR :',
+        width: 5,
+        styles: const PosStyles(align: PosAlign.right),
       ),
       PosColumn(
         text: order.bill.currencyFormatRp,
-        width: 6,
+        width: 7,
         styles: const PosStyles(align: PosAlign.right),
       ),
     ]);
 
     bytes += generator.row([
       PosColumn(
-        text: 'KEMBALI',
-        width: 6,
-        styles: const PosStyles(align: PosAlign.left),
+        text: 'KEMBALI :',
+        width: 5,
+        styles: const PosStyles(align: PosAlign.right),
       ),
       PosColumn(
         text: order.returN.currencyFormatRp,
-        width: 6,
-        styles: const PosStyles(align: PosAlign.right),
-      ),
-    ]);
-
-    bytes += generator.row([
-      PosColumn(
-        text: 'PEMBAYARAN',
-        width: 8,
-        styles: const PosStyles(align: PosAlign.left),
-      ),
-      PosColumn(
-        text: order.payment.toUpperCase(),
-        width: 4,
+        width: 7,
         styles: const PosStyles(align: PosAlign.right),
       ),
     ]);
 
     bytes += generator.feed(1);
     bytes += generator.text('TERIMA KASIH',
-        styles: const PosStyles(bold: false, align: PosAlign.center));
+        styles: const PosStyles(
+          bold: false,
+          align: PosAlign.center,
+          width: PosTextSize.size1,
+          height: PosTextSize.size3,
+        ));
     bytes += generator.feed(1);
 
     bytes += generator.qrcode(order.number);
     bytes += generator.text(order.number,
-        styles: const PosStyles(bold: false, align: PosAlign.center));
+        styles: const PosStyles(
+          bold: false,
+          align: PosAlign.center,
+          width: PosTextSize.size1,
+          height: PosTextSize.size2,
+        ));
     bytes += generator.feed(1);
 
     bytes += generator.feed(3);
