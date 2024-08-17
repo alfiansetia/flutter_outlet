@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_outlet/core/components/alert.dart';
-import 'package:flutter_outlet/features/auth/blocs/auth/auth_bloc.dart';
 import 'package:flutter_outlet/features/order/blocs/order/order_bloc.dart';
 import 'package:flutter_outlet/features/order/widgets/order_card.dart';
 
@@ -23,8 +22,9 @@ class _HistoryPageState extends State<HistoryPage>
   @override
   void initState() {
     super.initState();
-    context.read<OrderBloc>().add(const FetchAllOrderEvent(page: 1));
-    context.read<AuthBloc>().add(const FethAuthEven());
+    context
+        .read<OrderBloc>()
+        .add(const FetchAllOrderEvent(page: 1, query: 'status=done'));
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       _getData(listStatus[_tabController.index]);
@@ -58,7 +58,7 @@ class _HistoryPageState extends State<HistoryPage>
         !(bloc.state.status == OrderStatus.loading);
     if (next) {
       final nextPage = bloc.state.page + 1;
-      bloc.add(FetchAllOrderEvent(page: nextPage, query: 'status=${status}'));
+      bloc.add(FetchAllOrderEvent(page: nextPage, query: 'status=$status'));
     }
   }
 
