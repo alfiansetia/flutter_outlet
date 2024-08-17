@@ -53,4 +53,9 @@ class Meta {
         "to": to,
         "total": total,
       };
+
+  @override
+  String toString() {
+    return 'Meta(currentPage: $currentPage, from: $from, lastPage: $lastPage, links: $links, path: $path, perPage: $perPage, to: $to, total: $total)';
+  }
 }

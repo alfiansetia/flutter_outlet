@@ -8,9 +8,10 @@ abstract class OrderEvent extends Equatable {
 }
 
 class FetchAllOrderEvent extends OrderEvent {
-  const FetchAllOrderEvent({this.query});
+  const FetchAllOrderEvent({this.query, this.page = 1});
 
   final String? query;
+  final int page;
 
   @override
   List<Object> get props => [];

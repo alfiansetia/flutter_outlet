@@ -27,15 +27,24 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
 
   Future<void> _getAll(
       FetchAllOrderEvent event, Emitter<OrderState> emit) async {
-    emit(state.copyWith(status: OrderStatus.loading));
+    emit(state.copyWith(
+        status: OrderStatus.loading, data: event.page == 1 ? [] : data));
     try {
-      final OrderResponse model =
-          await orderRepository.getAll(query: "limit=100&${event.query}");
-      data = model.data;
+      final OrderResponse model = await orderRepository.getAll(
+        query: "limit=10&${event.query}&page=${event.page}",
+      );
+      bool hasMax = model.meta?.currentPage == model.meta?.lastPage;
+      if (event.page == 1) {
+        data = model.data;
+      } else {
+        data.addAll(model.data);
+      }
       emit(
         state.copyWith(
           status: OrderStatus.loaded,
           data: data,
+          hasMax: hasMax,
+          page: event.page,
         ),
       );
     } on CustomError catch (e) {
@@ -79,7 +88,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
   }
 
   Future<void> _detail(DetailOrderEvent event, Emitter<OrderState> emit) async {
-    emit(state.copyWith(status: OrderStatus.loading));
+    emit(state.copyWith(status: OrderStatus.loadingGetDetail));
     try {
       final Order model = await orderRepository.show(id: event.id);
       emit(
