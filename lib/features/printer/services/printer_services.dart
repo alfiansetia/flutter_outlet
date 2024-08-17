@@ -51,7 +51,6 @@ class PrinterServices {
   }
 
   Future<bool> printOrder({required Order order}) async {
-    // PrintBluetoothThermal printBluetoothThermal
     await _checkStatus();
     String mac = await getDefaultMac();
     if (mac.isEmpty) {
@@ -213,7 +212,7 @@ class PrinterServices {
     DateTime dateTime = DateTime.parse(dateString);
 
     String date = DateFormat("dd-MMM-yyyy").format(dateTime);
-    String time = DateFormat("H:m:s").format(dateTime);
+    String time = DateFormat("HH:mm:ss").format(dateTime);
 
     final profile = await CapabilityProfile.load();
     final generator = Generator(PaperSize.mm58, profile);
@@ -320,12 +319,14 @@ class PrinterServices {
     ]);
 
     bytes += generator.hr();
-    // bytes += generator.text('PESANAN:',
-    //     styles: const PosStyles(bold: false, align: PosAlign.center));
-    // bytes += generator.hr();
 
+    int totalDiscount = 0;
+    int subTotal = 0;
     for (final item in order.orderItem) {
-      bytes += generator.text(item.branchMenu?.menu?.name ?? '-',
+      totalDiscount += item.totalDiscount;
+      subTotal += item.qty * item.price;
+      bytes += generator.text(
+          (item.branchMenu?.menu?.name ?? '-').toUpperCase(),
           styles: const PosStyles(align: PosAlign.left));
       bytes += generator.row([
         PosColumn(
@@ -341,7 +342,7 @@ class PrinterServices {
       ]);
       if (item.totalDiscount > 0) {
         bytes += generator.text(
-          '- ${item.totalDiscount.currencyFormat}',
+          '-${item.totalDiscount.currencyFormat}',
           styles: const PosStyles(
             align: PosAlign.right,
           ),
@@ -351,6 +352,32 @@ class PrinterServices {
 
     bytes += generator.hr();
 
+    bytes += generator.row([
+      PosColumn(
+        text: 'SUBTOTAL :',
+        width: 5,
+        styles: const PosStyles(align: PosAlign.right),
+      ),
+      PosColumn(
+        text: subTotal.currencyFormatRp,
+        width: 7,
+        styles: const PosStyles(align: PosAlign.right),
+      ),
+    ]);
+    if (totalDiscount > 0) {
+      bytes += generator.row([
+        PosColumn(
+          text: 'DISKON :',
+          width: 5,
+          styles: const PosStyles(align: PosAlign.right),
+        ),
+        PosColumn(
+          text: totalDiscount.currencyFormatRp,
+          width: 7,
+          styles: const PosStyles(align: PosAlign.right),
+        ),
+      ]);
+    }
     bytes += generator.row([
       PosColumn(
         text: 'TOTAL :',
