@@ -56,6 +56,9 @@ class PrinterServices {
     if (mac.isEmpty) {
       throw const CustomError(message: 'Default Device Not set!');
     }
+    if (await PrintBluetoothThermal.connectionStatus) {
+      await PrintBluetoothThermal.disconnect;
+    }
     bool connect = await PrintBluetoothThermal.connect(macPrinterAddress: mac);
     if (!connect) {
       throw const CustomError(message: 'Failed to Connect!');
@@ -67,18 +70,17 @@ class PrinterServices {
     final branch = await AuthRepository().getBranch();
     List<int> ticket = await _getBytesOrder(order: order, branch: branch);
     bool result = await PrintBluetoothThermal.writeBytes(ticket);
-    // if (!result) {
-    //   throw const CustomError(message: 'Error Printing!');
-    // }
-    bool disconnect = await PrintBluetoothThermal.disconnect;
-    if (!disconnect) {
-      throw const CustomError(message: 'Failed Disconnect Device!');
+    if (!result) {
+      throw const CustomError(message: 'Error Printing!');
     }
     return result;
   }
 
   Future<bool> printTest({required Printer printer}) async {
     await _checkStatus();
+    if (await PrintBluetoothThermal.connectionStatus) {
+      await PrintBluetoothThermal.disconnect;
+    }
     bool connect =
         await PrintBluetoothThermal.connect(macPrinterAddress: printer.mac);
     if (!connect) {
@@ -89,16 +91,11 @@ class PrinterServices {
       throw const CustomError(message: 'Device Not Connect!');
     }
     List<int> ticket = await _testTicket();
-    // bool result =
-    await PrintBluetoothThermal.writeBytes(ticket);
-    // if (!result) {
-    //   throw const CustomError(message: 'Error Printing!');
-    // }
-    bool disconnect = await PrintBluetoothThermal.disconnect;
-    if (!disconnect) {
-      throw const CustomError(message: 'Cannot Disconnect Device!');
+    bool result = await PrintBluetoothThermal.writeBytes(ticket);
+    if (!result) {
+      throw const CustomError(message: 'Error Printing!');
     }
-    return disconnect;
+    return result;
   }
 
   Future<bool> _checkStatus() async {
@@ -295,7 +292,7 @@ class PrinterServices {
     ]);
     bytes += generator.row([
       PosColumn(
-        text: 'NAMA',
+        text: 'PEMESAN',
         width: 4,
         styles: const PosStyles(align: PosAlign.left),
       ),
@@ -330,8 +327,13 @@ class PrinterServices {
           styles: const PosStyles(align: PosAlign.left));
       bytes += generator.row([
         PosColumn(
+          text: '',
+          width: 1,
+          styles: const PosStyles(align: PosAlign.left),
+        ),
+        PosColumn(
           text: '${item.qty} X ${item.price.currencyFormat}',
-          width: 8,
+          width: 7,
           styles: const PosStyles(align: PosAlign.left),
         ),
         PosColumn(
@@ -435,9 +437,7 @@ class PrinterServices {
           width: PosTextSize.size1,
           height: PosTextSize.size2,
         ));
-    bytes += generator.feed(1);
-
-    bytes += generator.feed(3);
+    bytes += generator.feed(4);
 
     return bytes;
   }
