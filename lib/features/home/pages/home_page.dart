@@ -136,6 +136,9 @@ class _HomePageState extends State<HomePage> {
                 }
               },
               builder: (context, state) {
+                if (state.status == BranchMenuStatus.initial) {
+                  return const Center(child: CircularProgressIndicator());
+                }
                 if (state.model.isEmpty) {
                   return const MenuEmpty();
                 } else {

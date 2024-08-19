@@ -74,8 +74,8 @@ class _HistoryPageState extends State<HistoryPage>
           onTap: (value) {},
           controller: _tabController,
           tabs: const [
-            Tab(text: 'Done'),
-            Tab(text: 'Cancel'),
+            Tab(text: 'Selesai'),
+            Tab(text: 'Batal'),
           ],
         ),
       ),
