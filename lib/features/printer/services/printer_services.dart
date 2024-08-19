@@ -6,29 +6,16 @@ import 'package:flutter_outlet/core/extensions/int_ext.dart';
 import 'package:flutter_outlet/features/auth/repository/auth_repository.dart';
 import 'package:flutter_outlet/features/branch/models/branch.dart';
 import 'package:flutter_outlet/features/order/models/order.dart';
+import 'package:flutter_outlet/features/setting/models/setting.dart';
+import 'package:flutter_outlet/features/setting/repository/setting_repository.dart';
 import 'package:image/image.dart' as img;
 import 'package:flutter_outlet/models/custom_error.dart';
 import 'package:flutter_outlet/features/printer/models/printer.dart';
 import 'package:intl/intl.dart';
 import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class PrinterServices {
-  Future<String> getDefaultMac() async {
-    final SharedPreferences pref = await SharedPreferences.getInstance();
-    String mac = pref.getString('default_printer_mac') ?? '';
-    return mac;
-  }
-
-  Future<bool> setDefault({required Printer printer}) async {
-    final SharedPreferences pref = await SharedPreferences.getInstance();
-    final result = await pref.setString('default_printer_mac', printer.mac);
-    return result;
-  }
-
   Future<List<Printer>> getAll() async {
-    // final bool status =
-    String mac = await getDefaultMac();
     await _checkStatus();
     List<Printer> data = [];
     final List<BluetoothInfo> listResult =
@@ -38,7 +25,6 @@ class PrinterServices {
         Printer(
           name: bluetooth.name,
           mac: bluetooth.macAdress,
-          isDefault: bluetooth.macAdress == mac,
         ),
       );
     });
@@ -51,15 +37,16 @@ class PrinterServices {
   }
 
   Future<bool> printOrder({required Order order}) async {
+    final Setting setting = await SettingRepository().getData();
     await _checkStatus();
-    String mac = await getDefaultMac();
-    if (mac.isEmpty) {
+    if (setting.defaultMac.isEmpty) {
       throw const CustomError(message: 'Default Device Not set!');
     }
     if (await PrintBluetoothThermal.connectionStatus) {
       await PrintBluetoothThermal.disconnect;
     }
-    bool connect = await PrintBluetoothThermal.connect(macPrinterAddress: mac);
+    bool connect = await PrintBluetoothThermal.connect(
+        macPrinterAddress: setting.defaultMac);
     if (!connect) {
       throw const CustomError(message: 'Failed to Connect!');
     }
@@ -68,7 +55,8 @@ class PrinterServices {
       throw const CustomError(message: 'Device Not Connect!');
     }
     final branch = await AuthRepository().getBranch();
-    List<int> ticket = await _getBytesOrder(order: order, branch: branch);
+    List<int> ticket =
+        await _getBytesOrder(order: order, branch: branch, setting: setting);
     bool result = await PrintBluetoothThermal.writeBytes(ticket);
     if (!result) {
       throw const CustomError(message: 'Error Printing!');
@@ -203,16 +191,22 @@ class PrinterServices {
   Future<List<int>> _getBytesOrder({
     required Order order,
     required Branch branch,
+    required Setting setting,
   }) async {
     List<int> bytes = [];
     String dateString = order.date;
     DateTime dateTime = DateTime.parse(dateString);
 
+    PaperSize papersize = PaperSize.mm58;
+    if (setting.paper == PaperSetting.mm80) {
+      papersize = PaperSize.mm80;
+    }
+
     String date = DateFormat("dd-MMM-yyyy").format(dateTime);
     String time = DateFormat("HH:mm:ss").format(dateTime);
 
     final profile = await CapabilityProfile.load();
-    final generator = Generator(PaperSize.mm58, profile);
+    final generator = Generator(papersize, profile);
 
     bytes += generator.reset();
 

@@ -11,6 +11,7 @@ import 'package:flutter_outlet/features/order/blocs/order/order_bloc.dart';
 import 'package:flutter_outlet/features/auth/pages/login_page.dart';
 import 'package:flutter_outlet/features/printer/blocs/printer/printer_bloc.dart';
 import 'package:flutter_outlet/features/setting/blocs/profile/profile_bloc.dart';
+import 'package:flutter_outlet/features/setting/blocs/setting/setting_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'core/constants/colors.dart';
@@ -51,6 +52,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => ProfileBloc(authRepository: auth),
+        ),
+        BlocProvider(
+          create: (context) => SettingBloc(),
         ),
       ],
       child: MaterialApp(

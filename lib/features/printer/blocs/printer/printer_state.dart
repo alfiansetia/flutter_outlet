@@ -20,7 +20,7 @@ class PrinterState extends Equatable {
         data: [],
         status: PrinterStatus.initial,
         message: '',
-        defaultMac: '',
+        defaultMac: '00:00:00:00:00:00',
       );
 
   final List<Printer> data;

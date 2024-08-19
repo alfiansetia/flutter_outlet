@@ -9,8 +9,9 @@ import 'package:flutter_outlet/features/auth/blocs/logout/logout_bloc.dart';
 import 'package:flutter_outlet/features/auth/pages/login_page.dart';
 import 'package:flutter_outlet/features/printer/pages/manage_printer_page.dart';
 import 'package:flutter_outlet/features/setting/blocs/profile/profile_bloc.dart';
+import 'package:flutter_outlet/features/setting/blocs/setting/setting_bloc.dart';
 import 'package:flutter_outlet/features/setting/pages/profile_page.dart';
-import 'package:flutter_outlet/features/setting/pages/setting_branch_page.dart';
+import 'package:flutter_outlet/features/setting/pages/printer_setting_page.dart';
 
 class SettingPage extends StatelessWidget {
   const SettingPage({super.key});
@@ -29,9 +30,10 @@ class SettingPage extends StatelessWidget {
               children: [
                 MenuButton(
                   iconPath: Assets.images.manageProduct.path,
-                  label: 'Setting Branch',
+                  label: 'Setting Printer',
                   onPressed: () {
-                    context.push(SettingBranchPage());
+                    context.read<SettingBloc>().add(const FetchSettingEvent());
+                    context.push(PrinterSettingPage());
                   },
                   isImage: true,
                 ),

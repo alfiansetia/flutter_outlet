@@ -22,12 +22,3 @@ class PrintTestPrinterEvent extends PrinterEvent {
   @override
   List<Object> get props => [printer];
 }
-
-class SetDefaultPrinterEvent extends PrinterEvent {
-  const SetDefaultPrinterEvent({required this.printer});
-
-  final Printer printer;
-
-  @override
-  List<Object> get props => [printer];
-}

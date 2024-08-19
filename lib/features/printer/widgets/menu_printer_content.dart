@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_outlet/core/constants/colors.dart';
 import 'package:flutter_outlet/features/printer/blocs/printer/printer_bloc.dart';
 import 'package:flutter_outlet/features/printer/models/printer.dart';
+import 'package:flutter_outlet/features/setting/blocs/setting/setting_bloc.dart';
 
 class MenuPrinterContent extends StatelessWidget {
   final Printer data;
@@ -13,7 +14,8 @@ class MenuPrinterContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool defaultMac = context.watch<PrinterBloc>().state.defaultMac == data.mac;
+    final setting = context.watch<SettingBloc>().state.setting;
+    bool defaultMac = setting.defaultMac == data.mac;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0),
       decoration: BoxDecoration(
@@ -42,8 +44,9 @@ class MenuPrinterContent extends StatelessWidget {
                     PrintTestPrinterEvent(printer: data),
                   );
             } else if (value == 1) {
-              context.read<PrinterBloc>().add(
-                    SetDefaultPrinterEvent(printer: data),
+              context.read<SettingBloc>().add(
+                    SaveSettingEvent(
+                        setting: setting.copyWith(defaultMac: data.mac)),
                   );
             }
           },
