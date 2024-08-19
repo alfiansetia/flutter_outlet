@@ -4,9 +4,11 @@ import 'package:flutter_outlet/core/assets/assets.gen.dart';
 import 'package:flutter_outlet/core/components/alert.dart';
 import 'package:flutter_outlet/core/components/menu_button.dart';
 import 'package:flutter_outlet/core/components/spaces.dart';
+import 'package:flutter_outlet/core/extensions/build_context_ext.dart';
 import 'package:flutter_outlet/features/auth/blocs/auth/auth_bloc.dart';
 import 'package:flutter_outlet/features/cart/blocs/cart/cart_bloc.dart';
 import 'package:flutter_outlet/features/cart/models/cart.dart';
+import 'package:flutter_outlet/features/cart/pages/checkout_page.dart';
 import 'package:flutter_outlet/features/cart/widgets/cart_card.dart';
 import 'package:flutter_outlet/features/cart/widgets/payment_cash_dialog.dart';
 import 'package:flutter_outlet/features/cart/widgets/process_button.dart';
@@ -125,6 +127,9 @@ class _CartPageState extends State<CartPage> {
                             context: context)
                         .show();
                   } else if (indexValue.value == 1) {
+                    // context.push(CheckoutPage(
+                    //     payment: Payment.cash,
+                    //     total: cartState.totalPriceIncart));
                     showDialog(
                       context: context,
                       builder: (context) => PaymentCashDialog(
@@ -132,13 +137,16 @@ class _CartPageState extends State<CartPage> {
                       ),
                     );
                   } else if (indexValue.value == 2) {
-                    showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (context) => PaymentCashDialog(
-                        price: cartState.totalPriceIncart,
-                      ),
-                    );
+                    context.push(CheckoutPage(
+                        payment: Payment.transfer,
+                        total: cartState.totalPriceIncart));
+                    // showDialog(
+                    //   context: context,
+                    //   barrierDismissible: false,
+                    //   builder: (context) => PaymentCashDialog(
+                    //     price: cartState.totalPriceIncart,
+                    //   ),
+                    // );
                   }
                 }
               },

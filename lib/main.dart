@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_outlet/core/constants/colors.dart';
 import 'package:flutter_outlet/features/auth/blocs/auth/auth_bloc.dart';
 import 'package:flutter_outlet/features/auth/blocs/login/login_bloc.dart';
 import 'package:flutter_outlet/features/auth/blocs/logout/logout_bloc.dart';
@@ -13,19 +14,31 @@ import 'package:flutter_outlet/features/printer/blocs/printer/printer_bloc.dart'
 import 'package:flutter_outlet/features/setting/blocs/profile/profile_bloc.dart';
 import 'package:flutter_outlet/features/setting/blocs/setting/setting_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-import 'core/constants/colors.dart';
+// import 'package:permission_handler/permission_handler.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
+// void _requestPermissions() async {
+//   const bluetoothPermission = Permission.bluetooth;
+//   const nearbyDevicesPermission = Permission.bluetoothScan;
+
+//   if (!await bluetoothPermission.isGranted) {
+//     await bluetoothPermission.request();
+//   }
+
+//   if (!await nearbyDevicesPermission.isGranted) {
+//     await nearbyDevicesPermission.request();
+//   }
+// }
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    // _requestPermissions();
     final auth = AuthRepository();
     return MultiBlocProvider(
       providers: [

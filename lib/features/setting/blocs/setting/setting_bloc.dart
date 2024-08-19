@@ -12,16 +12,17 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     on<FetchSettingEvent>(_getData);
     on<SaveSettingEvent>(_save);
   }
+  final SettingRepository _settingRepository = SettingRepository();
 
   Future<void> _getData(
       FetchSettingEvent event, Emitter<SettingState> emit) async {
     emit(state.copyWith(status: SettingStatus.loading));
 
     try {
-      final Setting model = await SettingRepository().getData();
+      final Setting model = await _settingRepository.getData();
       emit(
         state.copyWith(
-          status: SettingStatus.success,
+          status: SettingStatus.loaded,
           setting: model,
         ),
       );
@@ -41,7 +42,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     emit(state.copyWith(status: SettingStatus.loading));
 
     try {
-      await SettingRepository().saveData(event.setting);
+      await _settingRepository.saveData(event.setting);
       emit(
         state.copyWith(
           status: SettingStatus.success,
