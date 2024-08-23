@@ -7,6 +7,7 @@ class User {
     required this.avatar,
     required this.id,
     required this.name,
+    required this.email,
     this.phone,
     required this.role,
     required this.isActive,
@@ -17,6 +18,7 @@ class User {
   factory User.initial() => User(
         id: 0,
         name: '',
+        email: '',
         phone: null,
         avatar: '',
         role: '',
@@ -27,6 +29,7 @@ class User {
   final String avatar;
   final int id;
   final String name;
+  final String email;
   final String? phone;
   final String role;
   final bool isActive;
@@ -41,6 +44,7 @@ class User {
     result.addAll({'avatar': avatar});
     result.addAll({'id': id});
     result.addAll({'name': name});
+    result.addAll({'email': email});
     if (phone != null) {
       result.addAll({'phone': phone});
     }
@@ -58,6 +62,7 @@ class User {
     String? avatar,
     int? id,
     String? name,
+    String? email,
     String? phone,
     String? role,
     bool? isActive,
@@ -68,6 +73,7 @@ class User {
       avatar: avatar ?? this.avatar,
       id: id ?? this.id,
       name: name ?? this.name,
+      email: email ?? this.email,
       phone: phone ?? this.phone,
       role: role ?? this.role,
       isActive: isActive ?? this.isActive,
@@ -81,6 +87,7 @@ class User {
       avatar: map['avatar'] ?? '',
       id: map['id']?.toInt() ?? 0,
       name: map['name'] ?? '',
+      email: map['email'] ?? '',
       phone: map['phone'],
       role: map['role'] ?? '',
       isActive: map['is_active'] ?? false,
@@ -93,6 +100,6 @@ class User {
 
   @override
   String toString() {
-    return 'User(avatar: $avatar, id: $id, name: $name, phone: $phone, role: $role, isActive: $isActive, branchId: $branchId, branch: $branch)';
+    return 'User(avatar: $avatar, id: $id, name: $name, email: $email, phone: $phone, role: $role, isActive: $isActive, branchId: $branchId, branch: $branch)';
   }
 }

@@ -25,7 +25,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       data = model;
       emit(
         state.copyWith(
-          status: ProfileStatus.success,
+          status: ProfileStatus.loaded,
           user: model,
         ),
       );

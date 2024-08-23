@@ -21,15 +21,7 @@ class AuthResponse {
 
   factory AuthResponse.initial() => AuthResponse(
         jwtToken: '',
-        user: User(
-          id: 0,
-          name: '',
-          phone: '',
-          avatar: '',
-          role: 'user',
-          isActive: false,
-          branchId: 0,
-        ),
+        user: User.initial(),
       );
 
   String toJson() => json.encode(toMap());

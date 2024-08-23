@@ -1,124 +1,144 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_outlet/core/assets/assets.gen.dart';
-import 'package:flutter_outlet/core/components/alert.dart';
-import 'package:flutter_outlet/core/components/menu_button.dart';
-import 'package:flutter_outlet/core/components/spaces.dart';
 import 'package:flutter_outlet/core/extensions/build_context_ext.dart';
-import 'package:flutter_outlet/features/auth/blocs/logout/logout_bloc.dart';
-import 'package:flutter_outlet/features/auth/pages/login_page.dart';
-import 'package:flutter_outlet/features/printer/pages/manage_printer_page.dart';
 import 'package:flutter_outlet/features/setting/blocs/profile/profile_bloc.dart';
-import 'package:flutter_outlet/features/setting/blocs/setting/setting_bloc.dart';
-import 'package:flutter_outlet/features/setting/pages/profile_page.dart';
 import 'package:flutter_outlet/features/setting/pages/printer_setting_page.dart';
+import 'package:flutter_outlet/features/setting/pages/profile_page.dart';
 
 class SettingPage extends StatelessWidget {
   const SettingPage({super.key});
 
+  void _refresh(BuildContext context) {
+    context.read<ProfileBloc>().add(const FetchProfileEvent());
+  }
+
   @override
   Widget build(BuildContext context) {
+    _refresh(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Setting'),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Row(
+      body: RefreshIndicator(
+        onRefresh: () async {
+          _refresh(context);
+        },
+        child: BlocBuilder<ProfileBloc, ProfileState>(
+          builder: (context, state) {
+            if (state.status == ProfileStatus.loading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            final user = state.user;
+            return Column(
               children: [
-                MenuButton(
-                  iconPath: Assets.images.manageProduct.path,
-                  label: 'Setting Printer',
-                  onPressed: () {
-                    context.read<SettingBloc>().add(const FetchSettingEvent());
-                    context.push(PrinterSettingPage());
-                  },
-                  isImage: true,
-                ),
-                const SpaceWidth(15.0),
-                MenuButton(
-                  iconPath: Assets.images.managePrinter.path,
-                  label: 'Kelola Printer',
-                  onPressed: () {
-                    context.push(const ManagePrinterPage());
-                  },
-                  isImage: true,
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Row(
-              children: [
-                BlocConsumer<ProfileBloc, ProfileState>(
-                  listener: (context, state) {
-                    if (state.status == ProfileStatus.error) {
-                      Alert(
-                        status: AlertStatus.error,
-                        message: state.message,
-                        context: context,
-                      ).show();
-                    }
-                    if (state.status == ProfileStatus.success) {
-                      context.push(
-                        ProfilePage(
-                          user: state.user,
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 40,
+                        backgroundImage: CachedNetworkImageProvider(
+                          user.avatar,
                         ),
-                      );
-                    }
-                  },
-                  builder: (context, state) {
-                    return MenuButton(
-                      iconPath: Assets.images.manageProduct.path,
-                      label: 'Profile',
-                      onPressed: () {
-                        context
-                            .read<ProfileBloc>()
-                            .add(const FetchProfileEvent());
-                      },
-                      isImage: true,
-                    );
-                  },
+                      ),
+                      const SizedBox(width: 15),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            user.name,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            user.email,
+                            style: TextStyle(
+                                fontSize: 14, color: Colors.grey[600]),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-                const SpaceWidth(15.0),
-                MenuButton(
-                  iconPath: Assets.images.managePrinter.path,
-                  label: 'Sinkronisasi Data',
-                  onPressed: () {
-                    context.push(const ManagePrinterPage());
-                  },
-                  isImage: true,
+                // Daftar Pengaturan
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.all(10),
+                    children: [
+                      Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        elevation: 4,
+                        child: ListTile(
+                          leading: const Icon(Icons.account_circle),
+                          title: const Text('Akun'),
+                          subtitle: const Text('Kelola akun anda'),
+                          trailing: const Icon(Icons.arrow_forward_ios),
+                          onTap: () {
+                            context.push(const ProfilePage());
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        elevation: 4,
+                        child: ListTile(
+                          leading: const Icon(Icons.print),
+                          title: const Text('Printer'),
+                          subtitle: const Text('Kelola printer'),
+                          trailing: const Icon(Icons.arrow_forward_ios),
+                          onTap: () {
+                            context.push(PrinterSettingPage());
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        elevation: 4,
+                        child: ListTile(
+                          leading: const Icon(Icons.lock),
+                          title: const Text('Privacy'),
+                          subtitle: const Text('Manage your privacy settings'),
+                          trailing: const Icon(Icons.arrow_forward_ios),
+                          onTap: () {
+                            //
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        elevation: 4,
+                        child: ListTile(
+                          leading: const Icon(Icons.help),
+                          title: const Text('Help & Support'),
+                          subtitle: const Text('Get help and support'),
+                          trailing: const Icon(Icons.arrow_forward_ios),
+                          onTap: () {
+                            // Navigate to help & support
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
-            ),
-          ),
-          const SpaceHeight(60),
-          const Divider(),
-          BlocConsumer<LogoutBloc, LogoutState>(
-            listener: (context, state) {
-              if (state.status == LogoutStatus.loaded) {
-                context.pushReplacement(const LoginPage());
-              }
-            },
-            builder: (context, state) {
-              return TextButton.icon(
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.red,
-                ),
-                onPressed: () {
-                  context.read<LogoutBloc>().add(const FetchLogoutEvent());
-                },
-                icon: const Icon(Icons.logout),
-                label: const Text('Logout'),
-              );
-            },
-          ),
-          const Divider(),
-        ],
+            );
+          },
+        ),
       ),
     );
   }
