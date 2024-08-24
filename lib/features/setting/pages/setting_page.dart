@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_outlet/core/extensions/build_context_ext.dart';
 import 'package:flutter_outlet/features/setting/blocs/profile/profile_bloc.dart';
+import 'package:flutter_outlet/features/setting/blocs/setting/setting_bloc.dart';
 import 'package:flutter_outlet/features/setting/pages/printer_setting_page.dart';
 import 'package:flutter_outlet/features/setting/pages/profile_page.dart';
 
@@ -96,6 +97,9 @@ class SettingPage extends StatelessWidget {
                           subtitle: const Text('Kelola printer'),
                           trailing: const Icon(Icons.arrow_forward_ios),
                           onTap: () {
+                            context
+                                .read<SettingBloc>()
+                                .add(const FetchSettingEvent());
                             context.push(PrinterSettingPage());
                           },
                         ),

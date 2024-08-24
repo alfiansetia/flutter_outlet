@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_outlet/core/extensions/int_ext.dart';
@@ -57,11 +55,12 @@ class PrinterServices {
     final branch = await AuthRepository().getBranch();
     List<int> ticket =
         await _getBytesOrder(order: order, branch: branch, setting: setting);
-    bool result = await PrintBluetoothThermal.writeBytes(ticket);
-    if (!result) {
-      throw const CustomError(message: 'Error Printing!');
-    }
-    return result;
+    // bool result =
+    await PrintBluetoothThermal.writeBytes(ticket);
+    // if (!result) {
+    //   throw const CustomError(message: 'Error Printing!');
+    // }
+    return true;
   }
 
   Future<bool> printTest({required Printer printer}) async {
@@ -79,11 +78,12 @@ class PrinterServices {
       throw const CustomError(message: 'Device Not Connect!');
     }
     List<int> ticket = await _testTicket();
-    bool result = await PrintBluetoothThermal.writeBytes(ticket);
-    if (!result) {
-      throw const CustomError(message: 'Error Printing!');
-    }
-    return result;
+    // bool result =
+    await PrintBluetoothThermal.writeBytes(ticket);
+    // if (!result) {
+    //   throw const CustomError(message: 'Error Printing!');
+    // }
+    return true;
   }
 
   Future<bool> _checkStatus() async {
@@ -100,27 +100,16 @@ class PrinterServices {
 
   Future<List<int>> _testTicket() async {
     List<int> bytes = [];
-    // Using default profile
     final profile = await CapabilityProfile.load();
-    // final generator = Generator(optionprinttype == "58 mm" ? PaperSize.mm58 : PaperSize.mm80, profile);
     final generator = Generator(PaperSize.mm58, profile);
-    //bytes += generator.setGlobalFont(PosFontType.fontA);
     bytes += generator.reset();
 
-    final ByteData data = await rootBundle.load('assets/images/logo_white.png');
+    final ByteData data = await rootBundle.load('assets/images/logo_gs.png');
     final Uint8List bytesImg = data.buffer.asUint8List();
     img.Image image = img.decodeImage(bytesImg)!;
-
-    if (Platform.isIOS) {
-      // Resizes the image to half its original size and reduces the quality to 80%
-      final resizedImage = img.copyResize(image,
-          width: image.width ~/ 1.3,
-          height: image.height ~/ 1.3,
-          interpolation: img.Interpolation.nearest);
-      final bytesimg = Uint8List.fromList(img.encodeJpg(resizedImage));
-      image = img.decodeImage(bytesimg)!;
-    }
-    // bytes += generator.image(image);
+    img.Image resizedImg = img.copyResize(image, width: 180);
+    img.Image grayscaleImg = img.grayscale(resizedImg, amount: 10);
+    bytes += generator.imageRaster(grayscaleImg, align: PosAlign.center);
 
     bytes += generator.text(
         'Regular: aA bB cC dD eE fF gG hH iI jJ kK lL mM nN oO pP qQ rR sS tT uU vV wW xX yY zZ');
@@ -209,6 +198,13 @@ class PrinterServices {
     final generator = Generator(papersize, profile);
 
     bytes += generator.reset();
+
+    final ByteData data = await rootBundle.load('assets/images/logo_gs.png');
+    final Uint8List bytesImg = data.buffer.asUint8List();
+    img.Image image = img.decodeImage(bytesImg)!;
+    img.Image resizedImg = img.copyResize(image, width: 180);
+    img.Image grayscaleImg = img.grayscale(resizedImg, amount: 10);
+    bytes += generator.imageRaster(grayscaleImg, align: PosAlign.center);
 
     bytes += generator.text(
       branch.name,
