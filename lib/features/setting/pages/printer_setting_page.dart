@@ -54,7 +54,16 @@ class PrinterSettingPage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(state.setting.defaultMac),
+                      Expanded(
+                        child: Text(
+                          state.setting.defaultMac,
+                          overflow: TextOverflow
+                              .ellipsis, // Mengatasi overflow dengan memotong teks
+                          style: const TextStyle(
+                              fontSize:
+                                  16), // Sesuaikan ukuran teks jika diperlukan
+                        ),
+                      ),
                       TextButton.icon(
                         onPressed: () {
                           context
