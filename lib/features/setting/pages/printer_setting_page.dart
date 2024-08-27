@@ -10,8 +10,12 @@ class PrinterSettingPage extends StatelessWidget {
   PrinterSettingPage({super.key});
 
   final ValueNotifier<int> valuenotif = ValueNotifier<int>(0);
-  final List<String> labelList = ['58 mm', '80 mm'];
-  final List<PaperSetting> paperList = [PaperSetting.mm58, PaperSetting.mm80];
+  final List<String> labelList = ['58 mm', '72 mm', '80 mm'];
+  final List<PaperSetting> paperList = [
+    PaperSetting.mm58,
+    PaperSetting.mm72,
+    PaperSetting.mm80
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +42,10 @@ class PrinterSettingPage extends StatelessWidget {
           }
           if (state.setting.paper == PaperSetting.mm58) {
             valuenotif.value = 0;
-          } else {
+          } else if (state.setting.paper == PaperSetting.mm72) {
             valuenotif.value = 1;
+          } else {
+            valuenotif.value = 2;
           }
           return Padding(
             padding: const EdgeInsets.all(16.0),
@@ -48,7 +54,7 @@ class PrinterSettingPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Default MAC Printer:',
+                    'Default Printer:',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   Row(
@@ -56,12 +62,9 @@ class PrinterSettingPage extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          state.setting.defaultMac,
-                          overflow: TextOverflow
-                              .ellipsis, // Mengatasi overflow dengan memotong teks
-                          style: const TextStyle(
-                              fontSize:
-                                  16), // Sesuaikan ukuran teks jika diperlukan
+                          '${state.setting.defaultName} ${state.setting.defaultMac} ',
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 16),
                         ),
                       ),
                       TextButton.icon(
@@ -83,27 +86,32 @@ class PrinterSettingPage extends StatelessWidget {
                   ValueListenableBuilder<int>(
                     valueListenable: valuenotif,
                     builder: (context, value, child) {
-                      return Row(
+                      return Column(
+                        // Menggunakan Column untuk menempatkan widget secara vertikal
                         children: [
-                          Expanded(
-                            child: RadioListTile<String>(
-                              title: Text(labelList[0]),
-                              value: labelList[0],
-                              groupValue: labelList[value],
-                              onChanged: (selectedValue) {
-                                valuenotif.value = 0;
-                              },
-                            ),
+                          RadioListTile<String>(
+                            title: Text(labelList[0]),
+                            value: labelList[0],
+                            groupValue: labelList[value],
+                            onChanged: (selectedValue) {
+                              valuenotif.value = 0;
+                            },
                           ),
-                          Expanded(
-                            child: RadioListTile<String>(
-                              title: Text(labelList[1]),
-                              value: labelList[1],
-                              groupValue: labelList[value],
-                              onChanged: (selectedValue) {
-                                valuenotif.value = 1;
-                              },
-                            ),
+                          RadioListTile<String>(
+                            title: Text(labelList[1]),
+                            value: labelList[1],
+                            groupValue: labelList[value],
+                            onChanged: (selectedValue) {
+                              valuenotif.value = 1;
+                            },
+                          ),
+                          RadioListTile<String>(
+                            title: Text(labelList[2]),
+                            value: labelList[2],
+                            groupValue: labelList[value],
+                            onChanged: (selectedValue) {
+                              valuenotif.value = 2;
+                            },
                           ),
                         ],
                       );
@@ -118,7 +126,8 @@ class PrinterSettingPage extends StatelessWidget {
                         context.read<SettingBloc>().add(
                               SaveSettingEvent(
                                 setting: state.setting.copyWith(
-                                    paper: paperList[valuenotif.value]),
+                                  paper: paperList[valuenotif.value],
+                                ),
                               ),
                             );
                       },

@@ -13,7 +13,7 @@ part 'printer_state.dart';
 class PrinterBloc extends Bloc<PrinterEvent, PrinterState> {
   List<Printer> data = [
     // Printer(name: 'name1', mac: '00-B0-D0-63-C2-26'),
-    // Printer(name: 'name', mac: '00-B0-D0-63-C2-27')
+    // Printer(name: 'name', mac: '00-B0-D0-63-C2-27'),
   ];
 
   PrinterBloc() : super(PrinterState.initial()) {
@@ -60,8 +60,12 @@ class PrinterBloc extends Bloc<PrinterEvent, PrinterState> {
     emit(state.copyWith(status: PrinterStatus.loading, data: data));
 
     try {
+      final setting = await SettingRepository().getData();
       // final bool model =
-      await PrinterServices().printTest(printer: event.printer);
+      await PrinterServices().printTest(
+        printer: event.printer,
+        setting: setting,
+      );
       emit(
         state.copyWith(
           status: PrinterStatus.success,

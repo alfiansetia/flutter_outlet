@@ -46,7 +46,11 @@ class MenuPrinterContent extends StatelessWidget {
             } else if (value == 1) {
               context.read<SettingBloc>().add(
                     SaveSettingEvent(
-                        setting: setting.copyWith(defaultMac: data.mac)),
+                      setting: setting.copyWith(
+                        defaultMac: data.mac,
+                        defaultName: data.name,
+                      ),
+                    ),
                   );
             }
           },

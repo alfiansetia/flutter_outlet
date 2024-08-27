@@ -63,7 +63,8 @@ class PrinterServices {
     return true;
   }
 
-  Future<bool> printTest({required Printer printer}) async {
+  Future<bool> printTest(
+      {required Printer printer, required Setting setting}) async {
     await _checkStatus();
     if (await PrintBluetoothThermal.connectionStatus) {
       await PrintBluetoothThermal.disconnect;
@@ -77,7 +78,7 @@ class PrinterServices {
     if (!status) {
       throw const CustomError(message: 'Device Not Connect!');
     }
-    List<int> ticket = await _testTicket();
+    List<int> ticket = await _testTicket(setting: setting);
     // bool result =
     await PrintBluetoothThermal.writeBytes(ticket);
     // if (!result) {
@@ -98,10 +99,19 @@ class PrinterServices {
     return true;
   }
 
-  Future<List<int>> _testTicket() async {
+  Future<List<int>> _testTicket({
+    required Setting setting,
+  }) async {
     List<int> bytes = [];
+
+    PaperSize papersize = PaperSize.mm58;
+    if (setting.paper == PaperSetting.mm80) {
+      papersize = PaperSize.mm80;
+    } else if (setting.paper == PaperSetting.mm72) {
+      papersize = PaperSize.mm72;
+    }
     final profile = await CapabilityProfile.load();
-    final generator = Generator(PaperSize.mm58, profile);
+    final generator = Generator(papersize, profile);
     bytes += generator.reset();
 
     final ByteData data = await rootBundle.load('assets/images/logo_gs.png');
@@ -189,6 +199,8 @@ class PrinterServices {
     PaperSize papersize = PaperSize.mm58;
     if (setting.paper == PaperSetting.mm80) {
       papersize = PaperSize.mm80;
+    } else if (setting.paper == PaperSetting.mm72) {
+      papersize = PaperSize.mm72;
     }
 
     String date = DateFormat("dd-MMM-yyyy").format(dateTime);
