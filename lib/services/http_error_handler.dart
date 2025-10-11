@@ -12,17 +12,35 @@ String httpErrorHandler(http.Response response) {
     AuthRepository().removeData();
   }
 
-  String body = json.decode(response.body)['message'];
-  if (body.isNotEmpty) {
-    return body;
+  // ✅ Coba decode JSON dengan aman
+  dynamic decoded;
+  try {
+    decoded = json.decode(response.body);
+  } catch (e) {
+    // kalau bukan JSON (mungkin HTML), kasih pesan error umum
+    return 'Invalid response format (HTML or non-JSON returned)';
   }
 
+  // ✅ Cek kalau ternyata hasil decode bukan Map
+  if (decoded is! Map || decoded['message'] == null) {
+    return 'Unexpected response structure';
+  }
+
+  // ✅ Ambil message dari JSON
+  String bodyMessage = decoded['message'].toString();
+
+  if (bodyMessage.isNotEmpty) {
+    return bodyMessage;
+  }
+
+  // ✅ Fallback berdasarkan status code
   if (statusCode == 422) {
-    message = json.decode(response.body)['message'];
+    message = decoded['message'] ?? 'Validation Error';
   } else if (statusCode == 500) {
     message = 'Server Error';
   } else {
     message = reasonPhrase ?? 'Error';
   }
+
   return message;
 }
